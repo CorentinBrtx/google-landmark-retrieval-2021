@@ -99,6 +99,13 @@ if __name__ == "__main__":
         help="num_workers argument for the data loaders.",
         default=11,
     )
+    parser.add_argument(
+        "--resume_training",
+        dest="resume_training",
+        type=bool,
+        help="Whether to resume training from a checkpoint.",
+        default=False,
+    )
 
     args = parser.parse_args()
 
@@ -121,4 +128,6 @@ if __name__ == "__main__":
         args.log_interval,
         args.early_stop_after,
         DEVICE,
+        args.data_dir,
+        args.resume_training,
     )
