@@ -50,6 +50,7 @@ download_check_and_extract() {
     if [[ "$md5_1" != "" && "$md5_1" = "$md5_2" ]]; then
         tar -xf ./$images_file_name -C $DIRECTORY
         echo "$images_file_name extracted!"
+        rm ./$images_file_name
     else
         echo "MD5 checksum for $images_file_name did not match checksum in $images_md5_file_name"
     fi

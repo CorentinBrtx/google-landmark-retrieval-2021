@@ -5,9 +5,8 @@ from argparse import ArgumentParser
 from typing import Optional
 
 import pandas as pd
-
-from src.data.utils import get_path, int_to_string
 from src.constants import Constants
+from src.data.utils import get_path, int_to_string
 
 
 def transfer_images(data_dir: str, clean_csv: str, nb_landmarks: int = -1):
@@ -17,7 +16,7 @@ def transfer_images(data_dir: str, clean_csv: str, nb_landmarks: int = -1):
         for image in row["images"].split(" "):
             images_clean[image] = row["landmark_id"]
 
-    landmarks = sorted(list(images_clean.values()))
+    landmarks = sorted(list(set(images_clean.values())))
     max_landmark = landmarks[nb_landmarks]
 
     train_csv = os.path.join(data_dir, "train.csv")
@@ -84,7 +83,6 @@ def download_and_sort(
     transfer_images(data_dir=data_dir, clean_csv=clean_csv, nb_landmarks=nb_landmarks)
 
     for i in range(begin, end + 1):
-        os.system(f"rm {os.path.join(data_dir, f'images_{int_to_string(i)}.tar')}")
         os.system(f"rm {os.path.join(data_dir, f'md5.images_{int_to_string(i)}.txt')}")
 
     os.system(f"rm -r {os.path.join(data_dir,'images_temp')}")
@@ -131,4 +129,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    download_and_sort(args.data_dir, args.clean_csv, args.begin, args.end, args.nb_landmarks)
+    for k in range(args.begin, args.end + 1, 6):
+        download_and_sort(
+            args.data_folder, args.clean_csv, k, min(k + 5, args.end), args.nb_landmarks
+        )
