@@ -24,7 +24,10 @@ SPLIT=$1
 # train --> 499.
 # test --> 19.
 # index --> 99.
-N=$2
+BEGIN=$2
+END=$3
+
+DIRECTORY=$4
 
 download_check_and_extract() {
     local i=$1
@@ -43,16 +46,16 @@ download_check_and_extract() {
     md5_1="$(cut -d' ' -f1 <<<"$images_md5")"
     md5_2="$(cut -d' ' -f1 "$images_md5_file_name" <<<cat)"
     if [[ "$md5_1" != "" && "$md5_1" = "$md5_2" ]]; then
-        tar -xf ./$images_file_name
+        tar -xf ./$images_file_name -C $DIRECTORY
         echo "$images_file_name extracted!"
     else
         echo "MD5 checksum for $images_file_name did not match checksum in $images_md5_file_name"
     fi
 }
 
-for i in $(seq 0 $NUM_PROC $N); do
+for i in $(seq $BEGIN $NUM_PROC $END); do
     upper=$(expr $i + $NUM_PROC - 1)
-    limit=$(($upper > $N ? $N : $upper))
+    limit=$(($upper > $END ? $END : $upper))
     for j in $(seq -f "%03g" $i $limit); do download_check_and_extract "$j" & done
     wait
 done

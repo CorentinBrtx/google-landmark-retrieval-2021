@@ -30,4 +30,4 @@ env.bak/
 venv.bak/
 
 # Large files
-data/
+/data/
