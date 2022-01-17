@@ -27,7 +27,8 @@ SPLIT=$1
 BEGIN=$2
 END=$3
 
-DIRECTORY=$4
+DOWNLOAD_DIRECTORY=$4
+DIRECTORY=$5
 
 download_check_and_extract() {
     local i=$1
@@ -36,6 +37,7 @@ download_check_and_extract() {
     images_tar_url=https://s3.amazonaws.com/google-landmark/$SPLIT/$images_file_name
     images_md5_url=https://s3.amazonaws.com/google-landmark/md5sum/$SPLIT/$images_md5_file_name
     echo "Downloading $images_file_name and its md5sum..."
+    cd $DOWNLOAD_DIRECTORY
     curl -Os $images_tar_url >/dev/null
     curl -Os $images_md5_url >/dev/null
     if [[ "$OSTYPE" == "linux-gnu" || "$OSTYPE" == "linux" ]]; then
@@ -51,6 +53,7 @@ download_check_and_extract() {
     else
         echo "MD5 checksum for $images_file_name did not match checksum in $images_md5_file_name"
     fi
+    cd -
 }
 
 for i in $(seq $BEGIN $NUM_PROC $END); do
