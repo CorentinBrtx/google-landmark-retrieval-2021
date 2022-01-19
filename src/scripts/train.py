@@ -86,11 +86,25 @@ if __name__ == "__main__":
         default=1.2,
     )
     parser.add_argument(
+        "--image_size",
+        dest="image_size",
+        type=int,
+        help="Size to resize the images to",
+        default=224,
+    )
+    parser.add_argument(
         "--log_interval",
         dest="log_interval",
         type=int,
         help="Number of batches between each logging.",
         default=50,
+    )
+    parser.add_argument(
+        "--checkpoint_interval",
+        dest="checkpoint_interval",
+        type=int,
+        help="Number of epochs between each model save.",
+        default=1,
     )
     parser.add_argument(
         "--early_stop",
@@ -128,8 +142,10 @@ if __name__ == "__main__":
     logger.info(f"Using device: {DEVICE}")
 
     train_loader, validation_loader, nb_classes = load_dataset(
-        args.data_dir, args.batch_size, args.num_workers, args.load_all
+        data_dir=args.data_dir, batch_size=args.batch_size, num_workers=args.num_workers, load_all=args.load_all, image_size=args.image_size
     )
+
+    logger.info("Dataset loaded")
 
     efficient_net = EfficientNet.from_pretrained("efficientnet-b0", num_classes=args.feature_size)
 
@@ -146,6 +162,7 @@ if __name__ == "__main__":
         args.lr,
         args.epochs,
         args.log_interval,
+        args.checkpoint_interval,
         args.early_stop_after,
         DEVICE,
         args.data_dir,

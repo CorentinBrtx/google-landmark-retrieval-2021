@@ -7,7 +7,7 @@ from torchvision import transforms
 
 
 def load_dataset(
-    data_dir: str, batch_size: int = 64, num_workers: int = 0, load_all: bool = False
+    data_dir: str, batch_size: int = 64, num_workers: int = 0, load_all: bool = False, image_size: int = 224
 ) -> Tuple[DataLoader, DataLoader, int]:
     """
     Create the train and validation dataloaders from the training set.
@@ -30,16 +30,13 @@ def load_dataset(
     """
     transformations = transforms.Compose(
         [
-            transforms.ToTensor(),
-            transforms.Resize((512, 512)),
+            transforms.Resize((image_size, image_size)),
             transforms.Normalize(
                 mean=[0.485 * 255, 0.456 * 255, 0.406 * 255],
                 std=[0.229 * 255, 0.224 * 255, 0.225 * 255],
             ),
         ]
     )
-
-    batch_size = 256
 
     dataset = GoogleLandmarkDataset(
         img_dir=os.path.join(data_dir, "train"),
@@ -57,7 +54,6 @@ def load_dataset(
         train_dataset,
         batch_size=batch_size,
         shuffle=True,
-        pin_memory=True,
         num_workers=num_workers,
         drop_last=True,
     )
@@ -66,7 +62,6 @@ def load_dataset(
         validation_dataset,
         batch_size=batch_size,
         shuffle=False,
-        pin_memory=True,
         num_workers=num_workers,
         drop_last=False,
     )

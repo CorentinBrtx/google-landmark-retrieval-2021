@@ -32,12 +32,13 @@ class GoogleLandmarkDataset(Dataset):
         if self.load_all:
             return self.images[idx], self.labels[idx]
         else:
-            img_path = get_path(self.img_dir, self.img_labels.iloc[idx, 0])
+            img_id = self.img_labels.iloc[idx, 0]
             landmark_id = self.img_labels.iloc[idx, 1]  # pylint: disable=no-member
-            return self.get_image_and_label(img_path, landmark_id)
+            return self.get_image_and_label(img_id, landmark_id)
 
-    def get_image_and_label(self, img_path: str, landmark_id: str):
-        image = read_image(img_path)
+    def get_image_and_label(self, img_id: str, landmark_id: str):
+        img_path = get_path(self.img_dir, img_id)
+        image = read_image(img_path).float()
         label = self.landmark_id_to_label[landmark_id]
         if self.transform:
             image = self.transform(image)
