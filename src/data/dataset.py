@@ -1,7 +1,7 @@
 import pandas as pd
 from torch.utils.data import Dataset
 from torchvision.io import read_image
-from utils import get_path
+from src.data.utils import get_path
 
 
 class GoogleLandmarkDataset(Dataset):

@@ -1,9 +1,16 @@
+import os
+import sys
+
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+
 from argparse import ArgumentParser
 
 import torch
 import torch.nn as nn
+from efficientnet_pytorch import EfficientNet
 from src.data.dataloader import load_dataset
 from src.models.angular_margin import ArcFace
+from src.models.backbone import EfficientNetBackbone
 from src.train.train import train
 from src.utils.logger import logger
 
@@ -124,9 +131,15 @@ if __name__ == "__main__":
         args.data_dir, args.batch_size, args.num_workers, args.load_all
     )
 
+    efficient_net = EfficientNet.from_pretrained("efficientnet-b0", num_classes=args.feature_size)
+
     backbone, head, acc = train(
         train_loader,
         validation_loader,
+        EfficientNetBackbone(
+            args.feature_size,
+            efficient_net,
+        ),
         ArcFace(args.feature_size, nb_classes, args.s, args.m),
         nn.CrossEntropyLoss(),
         args.feature_size,

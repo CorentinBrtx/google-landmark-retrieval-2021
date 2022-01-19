@@ -1,6 +1,6 @@
 import logging
+from logging.handlers import WatchedFileHandler
 import sys
-from asyncio.log import logger
 from typing import Dict
 
 
@@ -12,7 +12,7 @@ def setup_logger():
         stream_handler = logging.StreamHandler(stream=sys.stdout)
         stream_handler.setFormatter(formatter)
         _logger.addHandler(stream_handler)
-        file_handler = logging.handlers.WatchedFileHandler("train.log")
+        file_handler = WatchedFileHandler("train.log")
         file_handler.setFormatter(formatter)
         _logger.addHandler(file_handler)
     return _logger
