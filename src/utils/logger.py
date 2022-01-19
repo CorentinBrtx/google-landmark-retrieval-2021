@@ -22,16 +22,23 @@ logger = setup_logger()
 
 
 class SummaryWriter:
-    def __init__(self, nb_epochs: int, nb_batchs: int) -> None:
+    def __init__(self, nb_epochs: int, nb_batchs_train: int, nb_batchs_val: int) -> None:
         self.nb_epochs = nb_epochs
-        self.nb_batchs = nb_batchs
+        self.nb_batchs_train = nb_batchs_train
+        self.nb_batchs_val = nb_batchs_val
         self.epoch = 0
 
     def set_epoch(self, epoch: int) -> None:
         self.epoch = epoch
 
     def __call__(self, mode: str, i_batch: int, metrics: Dict[str, float]) -> None:
-        summary = f"{mode.title()} Epoch {self.epoch}/{self.nb_epochs} | Batch {i_batch}/{self.nb_batchs} | "
+        if mode.lower() == "train":
+            nb_batchs = self.nb_batchs_train
+        else:
+            nb_batchs = self.nb_batchs_val
+        summary = (
+            f"{mode.title()} Epoch {self.epoch}/{self.nb_epochs} | Batch {i_batch}/{nb_batchs} | "
+        )
         for metric_name, metric_value in metrics.items():
             summary += f"{metric_name.title()} {metric_value:.2f} | "
         logger.info(summary[:-2])

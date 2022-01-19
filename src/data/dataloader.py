@@ -7,7 +7,11 @@ from torchvision import transforms
 
 
 def load_dataset(
-    data_dir: str, batch_size: int = 64, num_workers: int = 0, load_all: bool = False, image_size: int = 224
+    data_dir: str,
+    batch_size: int = 64,
+    num_workers: int = 0,
+    load_all: bool = False,
+    image_size: int = 224,
 ) -> Tuple[DataLoader, DataLoader, int]:
     """
     Create the train and validation dataloaders from the training set.

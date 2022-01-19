@@ -10,10 +10,12 @@ from src.models.backbone import EfficientNetBackbone
 from src.utils.logger import SummaryWriter, logger
 from torch.utils.data import DataLoader
 
-from .epoch import pass_epoch
+from src.train.epoch import pass_epoch
+from src.utils.file_manipulation import silentremove
 
 
 def train(
+    model_name: str,
     train_loader: DataLoader,
     validation_loader: DataLoader,
     efficientNet: nn.Module,
@@ -40,9 +42,11 @@ def train(
     optimizer = optim.Adam(list(backbone.parameters()) + list(angular_margin.parameters()), lr=lr)
     scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=5)
 
-    summary_writer = SummaryWriter(nb_epochs, len(train_loader))
+    summary_writer = SummaryWriter(nb_epochs, len(train_loader), len(validation_loader))
 
-    os.makedirs(os.path.join(data_dir, "models", "checkpoints"), exist_ok=True)
+    path_to_model = os.path.join(data_dir, "models", model_name)
+
+    os.makedirs(path_to_model, exist_ok=True)
 
     train_losses = []
     val_losses = []
@@ -53,9 +57,7 @@ def train(
     early_stop_counter = 0
 
     if resume_training:
-        checkpoint = torch.load(
-            os.path.join(data_dir, "models", "checkpoints", "latest_checkpoint.pth")
-        )
+        checkpoint = torch.load(os.path.join(path_to_model, "latest_checkpoint.pth"))
         backbone.load_state_dict(checkpoint["backbone_state_dict"])
         angular_margin.load_state_dict(checkpoint["head_state_dict"])
         optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
@@ -68,6 +70,25 @@ def train(
         early_stop_counter = checkpoint["early_stop_counter"]
 
     while epoch < nb_epochs:
+
+        if epoch % checkpoint_interval == 0:
+            silentremove(os.path.join(path_to_model, "latest_checkpoint.pth"))
+            torch.save(
+                {
+                    "epoch": epoch,
+                    "backbone_state_dict": backbone.state_dict(),
+                    "head_state_dict": angular_margin.state_dict(),
+                    "best_backbone_state_dict": backbone_state_dict,
+                    "best_head_state_dict": head_state_dict,
+                    "optimizer_state_dict": optimizer.state_dict(),
+                    "min_loss": min_loss,
+                    "train_losses": train_losses,
+                    "val_losses": val_losses,
+                    "early_stop_counter": early_stop_counter,
+                },
+                os.path.join(path_to_model, "latest_checkpoint.pth"),
+            )
+
         epoch += 1
 
         summary_writer.set_epoch(epoch)
@@ -117,25 +138,7 @@ def train(
 
         scheduler.step(loss)
 
-        if epoch % checkpoint_interval == 0:
-            os.remove(os.path.join(data_dir, "models", "checkpoints", "latest_checkpoint.pth"))
-            torch.save(
-                {
-                    "epoch": epoch,
-                    "backbone_state_dict": backbone.state_dict(),
-                    "head_state_dict": angular_margin.state_dict(),
-                    "best_backbone_state_dict": backbone_state_dict,
-                    "best_head_state_dict": head_state_dict,
-                    "optimizer_state_dict": optimizer.state_dict(),
-                    "min_loss": min_loss,
-                    "train_losses": train_losses,
-                    "val_losses": val_losses,
-                    "early_stop_counter": early_stop_counter,
-                },
-                os.path.join(data_dir, "models", "checkpoints", "latest_checkpoint.pth"),
-            )
-
-        os.remove(os.path.join(data_dir, "models", "progress.png"))
+        silentremove(os.path.join(path_to_model, "progress.png"))
 
         fig = plt.figure(figsize=(12, 7), dpi=200, facecolor="w")
         plt.plot(train_losses, label="train")
@@ -144,19 +147,19 @@ def train(
         plt.xlabel("Epoch")
         plt.ylabel("Loss")
         plt.title("Loss evolution")
-        fig.savefig(os.path.join(data_dir, "models", "progress.png"))
+        fig.savefig(os.path.join(path_to_model, "progress.png"))
         plt.close(fig)
 
     backbone.load_state_dict(backbone_state_dict)
     angular_margin.load_state_dict(head_state_dict)
 
-    os.remove(os.path.join(data_dir, "models", "checkpoints", "latest_checkpoint.pth"))
+    silentremove(os.path.join(path_to_model, "latest_checkpoint.pth"))
     torch.save(
         {
             "backbone_state_dict": backbone_state_dict,
             "head_state_dict": head_state_dict,
         },
-        os.path.join(data_dir, "models", "final_model.pth"),
+        os.path.join(path_to_model, "final_model.pth"),
     )
 
     return backbone, angular_margin, min_loss

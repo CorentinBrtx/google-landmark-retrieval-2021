@@ -19,6 +19,11 @@ if __name__ == "__main__":
         description="Train a model on the training set available in the data folder."
     )
     parser.add_argument(
+        dest="model_name",
+        help="Name of the model.",
+        required=True,
+    )
+    parser.add_argument(
         "-d",
         "--data_dir",
         dest="data_dir",
@@ -142,7 +147,11 @@ if __name__ == "__main__":
     logger.info(f"Using device: {DEVICE}")
 
     train_loader, validation_loader, nb_classes = load_dataset(
-        data_dir=args.data_dir, batch_size=args.batch_size, num_workers=args.num_workers, load_all=args.load_all, image_size=args.image_size
+        data_dir=args.data_dir,
+        batch_size=args.batch_size,
+        num_workers=args.num_workers,
+        load_all=args.load_all,
+        image_size=args.image_size,
     )
 
     logger.info("Dataset loaded")
@@ -150,6 +159,7 @@ if __name__ == "__main__":
     efficient_net = EfficientNet.from_pretrained("efficientnet-b0", num_classes=args.feature_size)
 
     backbone, head, acc = train(
+        args.model_name,
         train_loader,
         validation_loader,
         EfficientNetBackbone(
