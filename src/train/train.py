@@ -70,25 +70,6 @@ def train(
         early_stop_counter = checkpoint["early_stop_counter"]
 
     while epoch < nb_epochs:
-
-        if epoch % checkpoint_interval == 0:
-            silentremove(os.path.join(path_to_model, "latest_checkpoint.pth"))
-            torch.save(
-                {
-                    "epoch": epoch,
-                    "backbone_state_dict": backbone.state_dict(),
-                    "head_state_dict": angular_margin.state_dict(),
-                    "best_backbone_state_dict": backbone_state_dict,
-                    "best_head_state_dict": head_state_dict,
-                    "optimizer_state_dict": optimizer.state_dict(),
-                    "min_loss": min_loss,
-                    "train_losses": train_losses,
-                    "val_losses": val_losses,
-                    "early_stop_counter": early_stop_counter,
-                },
-                os.path.join(path_to_model, "latest_checkpoint.pth"),
-            )
-
         epoch += 1
 
         summary_writer.set_epoch(epoch)
@@ -138,6 +119,24 @@ def train(
 
         scheduler.step(loss)
 
+        if epoch % checkpoint_interval == 0:
+            silentremove(os.path.join(path_to_model, "latest_checkpoint.pth"))
+            torch.save(
+                {
+                    "epoch": epoch,
+                    "backbone_state_dict": backbone.state_dict(),
+                    "head_state_dict": angular_margin.state_dict(),
+                    "best_backbone_state_dict": backbone_state_dict,
+                    "best_head_state_dict": head_state_dict,
+                    "optimizer_state_dict": optimizer.state_dict(),
+                    "min_loss": min_loss,
+                    "train_losses": train_losses,
+                    "val_losses": val_losses,
+                    "early_stop_counter": early_stop_counter,
+                },
+                os.path.join(path_to_model, "latest_checkpoint.pth"),
+            )
+
         silentremove(os.path.join(path_to_model, "progress.png"))
 
         fig = plt.figure(figsize=(12, 7), dpi=200, facecolor="w")
@@ -149,6 +148,7 @@ def train(
         plt.title("Loss evolution")
         fig.savefig(os.path.join(path_to_model, "progress.png"))
         plt.close(fig)
+
 
     backbone.load_state_dict(backbone_state_dict)
     angular_margin.load_state_dict(head_state_dict)
