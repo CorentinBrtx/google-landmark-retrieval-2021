@@ -97,14 +97,14 @@ if __name__ == "__main__":
         dest="early_stop_after",
         type=int,
         help="Number of epochs to wait before early stopping.",
-        default=1.2,
+        default=11,
     )
     parser.add_argument(
         "--num_workers",
         dest="num_workers",
         type=int,
         help="num_workers argument for the data loaders.",
-        default=11,
+        default=0,
     )
     parser.add_argument(
         "--resume_training",
