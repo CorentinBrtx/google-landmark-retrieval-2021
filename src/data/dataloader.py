@@ -7,7 +7,7 @@ from torchvision import transforms
 
 
 def load_dataset(
-    data_dir: str, batch_size: int = 64, num_workers: int = 0
+    data_dir: str, batch_size: int = 64, num_workers: int = 0, load_all: bool = False
 ) -> Tuple[DataLoader, DataLoader, int]:
     """
     Create the train and validation dataloaders from the training set.
@@ -20,6 +20,8 @@ def load_dataset(
         batch_size to use
     num_workers : int, optional
         num_workers for the data loaders, by default 0
+    load_all : bool, optional
+        whether to load all the images in memory, by default False
 
     Returns
     -------
@@ -43,6 +45,7 @@ def load_dataset(
         img_dir=os.path.join(data_dir, "train"),
         annotations_file=os.path.join(data_dir, "train.csv"),
         transform=transformations,
+        load_all=load_all,
     )
 
     train_size = int(0.8 * len(dataset))

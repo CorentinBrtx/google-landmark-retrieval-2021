@@ -106,6 +106,13 @@ if __name__ == "__main__":
         help="Whether to resume training from a checkpoint.",
         default=False,
     )
+    parser.add_argument(
+        "--load_all",
+        dest="load_all",
+        type=bool,
+        help="Whether to load all the images in memory.",
+        default=False,
+    )
 
     args = parser.parse_args()
 
@@ -114,7 +121,7 @@ if __name__ == "__main__":
     logger.info(f"Using device: {DEVICE}")
 
     train_loader, validation_loader, nb_classes = load_dataset(
-        args.data_dir, args.batch_size, args.num_workers
+        args.data_dir, args.batch_size, args.num_workers, args.load_all
     )
 
     backbone, head, acc = train(
