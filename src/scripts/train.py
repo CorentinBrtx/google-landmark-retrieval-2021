@@ -21,18 +21,17 @@ if __name__ == "__main__":
     parser.add_argument(
         dest="model_name",
         help="Name of the model.",
-        required=True,
     )
     parser.add_argument(
         "-d",
-        "--data_dir",
+        "--data-dir",
         dest="data_dir",
         help="Directory containing the data.",
         required=True,
     )
     parser.add_argument(
         "-f",
-        "--feature_size",
+        "--feature-size",
         dest="feature_size",
         type=int,
         help="Size of the embeddings vector.",
@@ -40,7 +39,7 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "-n",
-        "--nb_epochs",
+        "--nb-epochs",
         dest="epochs",
         type=int,
         help="Number of epochs to train.",
@@ -48,7 +47,7 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "-b",
-        "--batch_size",
+        "--batch-size",
         dest="batch_size",
         type=int,
         help="Batch size for the data loaders.",
@@ -56,7 +55,7 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "-lr",
-        "--learning_rate",
+        "--learning-rate",
         dest="lr",
         type=float,
         help="Initial learning rate for the Adam optimizer.",
@@ -91,53 +90,51 @@ if __name__ == "__main__":
         default=1.2,
     )
     parser.add_argument(
-        "--image_size",
+        "--image-size",
         dest="image_size",
         type=int,
         help="Size to resize the images to",
         default=224,
     )
     parser.add_argument(
-        "--log_interval",
+        "--log-interval",
         dest="log_interval",
         type=int,
         help="Number of batches between each logging.",
         default=50,
     )
     parser.add_argument(
-        "--checkpoint_interval",
+        "--checkpoint-interval",
         dest="checkpoint_interval",
         type=int,
         help="Number of epochs between each model save.",
         default=1,
     )
     parser.add_argument(
-        "--early_stop",
+        "--early-stop",
         dest="early_stop_after",
         type=int,
         help="Number of epochs to wait before early stopping.",
         default=11,
     )
     parser.add_argument(
-        "--num_workers",
+        "--num-workers",
         dest="num_workers",
         type=int,
         help="num_workers argument for the data loaders.",
         default=0,
     )
     parser.add_argument(
-        "--resume_training",
+        "--resume-training",
         dest="resume_training",
-        type=bool,
-        help="Whether to resume training from a checkpoint.",
-        default=False,
+        action="store_true",
+        help="Resume training from a checkpoint.",
     )
     parser.add_argument(
-        "--load_all",
+        "--load-all",
         dest="load_all",
-        type=bool,
-        help="Whether to load all the images in memory.",
-        default=False,
+        action="store_true",
+        help="Load all the images in memory.",
     )
 
     args = parser.parse_args()
