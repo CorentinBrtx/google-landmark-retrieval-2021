@@ -11,6 +11,7 @@ from efficientnet_pytorch import EfficientNet
 from src.data.dataloader import load_dataset
 from src.models.angular_margin import ArcFace
 from src.models.backbone import EfficientNetBackbone
+from src.models.saving import save_model_config
 from src.train.train import train
 from src.utils.logger import logger
 
@@ -97,6 +98,13 @@ if __name__ == "__main__":
         default=224,
     )
     parser.add_argument(
+        "--efficientnet",
+        dest="efficient_net",
+        type=str,
+        help="EfficientNet model to use",
+        default="efficientnet-b0",
+    )
+    parser.add_argument(
         "--log-interval",
         dest="log_interval",
         type=int,
@@ -139,6 +147,8 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
+    os.environ["LANDMARK_RETRIEVAL_DATA_DIR"] = args.data_dir
+
     DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
     logger.info(f"Using device: {DEVICE}")
@@ -153,7 +163,18 @@ if __name__ == "__main__":
 
     logger.info("Dataset loaded")
 
-    efficient_net = EfficientNet.from_pretrained("efficientnet-b0", num_classes=args.feature_size)
+    efficient_net = EfficientNet.from_pretrained(args.efficient_net, num_classes=args.feature_size)
+
+    if not args.resume_training:
+        save_model_config(
+            {
+                **vars(args),
+                "train_batches": len(train_loader),
+                "val_batches": len(validation_loader),
+                "nb_classes": nb_classes,
+            },
+            args.model_name,
+        )
 
     backbone, head, acc = train(
         args.model_name,

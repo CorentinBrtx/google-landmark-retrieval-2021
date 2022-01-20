@@ -135,7 +135,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
+    os.environ["LANDMARK_RETRIEVAL_DATA_DIR"] = args.data_dir
+
     for k in range(args.begin, args.end + 1, 6):
-        download_and_sort(
-            args.data_folder, args.clean_csv, k, min(k + 5, args.end), args.nb_landmarks
-        )
+        download_and_sort(args.data_dir, args.clean_csv, k, min(k + 5, args.end), args.nb_landmarks)
