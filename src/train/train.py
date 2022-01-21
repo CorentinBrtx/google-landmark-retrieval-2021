@@ -6,22 +6,19 @@ import matplotlib.pyplot as plt
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from src.models.backbone import EfficientNetBackbone
-from src.utils.logger import SummaryWriter, logger
-from torch.utils.data import DataLoader
-
 from src.train.epoch import pass_epoch
 from src.utils.file_manipulation import silentremove
+from src.utils.logger import SummaryWriter, logger
+from torch.utils.data import DataLoader
 
 
 def train(
     model_name: str,
     train_loader: DataLoader,
     validation_loader: DataLoader,
-    efficientNet: nn.Module,
+    backbone: nn.Module,
     angular_margin: nn.Module,
     loss_fn: nn.Module,
-    feature_size: int,
     lr: float,
     nb_epochs: int,
     log_interval: int,
@@ -32,7 +29,6 @@ def train(
     resume_training: bool = False,
 ) -> nn.Module:
 
-    backbone = EfficientNetBackbone(feature_size, efficientNet)
     backbone.to(device)
     angular_margin.to(device)
 
@@ -148,7 +144,6 @@ def train(
         plt.title("Loss evolution")
         fig.savefig(os.path.join(path_to_model, "progress.png"))
         plt.close(fig)
-
 
     backbone.load_state_dict(backbone_state_dict)
     angular_margin.load_state_dict(head_state_dict)

@@ -1,6 +1,7 @@
 import os
 from typing import Tuple
 
+import torch
 from src.data.dataset import GoogleLandmarkDataset
 from torch.utils.data import DataLoader, random_split
 from torchvision import transforms
@@ -12,6 +13,7 @@ def load_dataset(
     num_workers: int = 0,
     load_all: bool = False,
     image_size: int = 224,
+    seed: int = None,
 ) -> Tuple[DataLoader, DataLoader, int]:
     """
     Create the train and validation dataloaders from the training set.
@@ -52,7 +54,12 @@ def load_dataset(
     train_size = int(0.8 * len(dataset))
     val_size = len(dataset) - train_size
 
-    train_dataset, validation_dataset = random_split(dataset, [train_size, val_size])
+    if seed is not None:
+        generator = torch.Generator().manual_seed(seed)
+    else:
+        generator = torch.Generator()
+
+    train_dataset, validation_dataset = random_split(dataset, [train_size, val_size], generator)
 
     train_loader = DataLoader(
         train_dataset,

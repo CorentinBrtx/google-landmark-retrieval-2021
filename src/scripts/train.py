@@ -3,15 +3,16 @@ import sys
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
-from argparse import ArgumentParser
+from argparse import ArgumentParser, Namespace
 
 import torch
 import torch.nn as nn
 from efficientnet_pytorch import EfficientNet
+from numpy import random
 from src.data.dataloader import load_dataset
 from src.models.angular_margin import ArcFace
 from src.models.backbone import EfficientNetBackbone
-from src.models.saving import save_model_config
+from src.models.saving import save_model_config, load_model_config
 from src.train.train import train
 from src.utils.logger import logger
 
@@ -133,10 +134,16 @@ if __name__ == "__main__":
         default=0,
     )
     parser.add_argument(
+        "--seed",
+        dest="seed",
+        type=int,
+        help="Seed for the train-val split.",
+    )
+    parser.add_argument(
         "--resume-training",
         dest="resume_training",
         action="store_true",
-        help="Resume training from a checkpoint.",
+        help="Resume training from a checkpoint. Note that in that case, all other parameters are ignored.",
     )
     parser.add_argument(
         "--load-all",
@@ -153,28 +160,37 @@ if __name__ == "__main__":
 
     logger.info(f"Using device: {DEVICE}")
 
+    if args.resume_training:
+        args = Namespace(**load_model_config(args.model_name))
+
+    if args.seed is not None:
+        seed = args.seed
+    else:
+        seed = random.randint(0, 2 ** 32)
+
     train_loader, validation_loader, nb_classes = load_dataset(
         data_dir=args.data_dir,
         batch_size=args.batch_size,
         num_workers=args.num_workers,
         load_all=args.load_all,
         image_size=args.image_size,
+        seed=seed,
     )
 
     logger.info("Dataset loaded")
 
     efficient_net = EfficientNet.from_pretrained(args.efficient_net, num_classes=args.feature_size)
 
-    if not args.resume_training:
-        save_model_config(
-            {
-                **vars(args),
-                "train_batches": len(train_loader),
-                "val_batches": len(validation_loader),
-                "nb_classes": nb_classes,
-            },
-            args.model_name,
-        )
+    save_model_config(
+        {
+            **vars(args),
+            "train_batches": len(train_loader),
+            "val_batches": len(validation_loader),
+            "nb_classes": nb_classes,
+            "seed": seed,
+        },
+        args.model_name,
+    )
 
     backbone, head, acc = train(
         args.model_name,
@@ -186,7 +202,6 @@ if __name__ == "__main__":
         ),
         ArcFace(args.feature_size, nb_classes, args.s, args.m),
         nn.CrossEntropyLoss(),
-        args.feature_size,
         args.lr,
         args.epochs,
         args.log_interval,
