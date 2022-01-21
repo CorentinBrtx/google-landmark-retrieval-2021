@@ -45,7 +45,9 @@ def train(
     os.makedirs(path_to_model, exist_ok=True)
 
     train_losses = []
+    train_accuracies = []
     val_losses = []
+    val_accuracies = []
 
     min_loss = math.inf
     epoch = 0
@@ -62,7 +64,9 @@ def train(
         epoch = checkpoint["epoch"]
         min_loss = checkpoint["min_loss"]
         train_losses = checkpoint["train_losses"]
+        train_accuracies = checkpoint["train_accuracies"]
         val_losses = checkpoint["val_losses"]
+        val_accuracies = checkpoint["val_accuracies"]
         early_stop_counter = checkpoint["early_stop_counter"]
 
     while epoch < nb_epochs:
@@ -84,6 +88,7 @@ def train(
             device,
         )
         logger.info(f"Train Epoch Loss: {loss:.2f} | Accuracy: {acc:.2f}\n")
+        train_accuracies.append(acc)
         train_losses.append(loss)
 
         backbone.eval()
@@ -98,8 +103,8 @@ def train(
             log_interval,
             device,
         )
-        acc = round(acc, 2)
-        logger.info(f"Validation Epoch Loss: {loss:.2f} | Accuracy: {acc}\n")
+        logger.info(f"Validation Epoch Loss: {loss:.2f} | Accuracy: {acc:.2f}\n")
+        val_accuracies.append(acc)
         val_losses.append(loss)
 
         if loss < min_loss:
@@ -127,7 +132,9 @@ def train(
                     "optimizer_state_dict": optimizer.state_dict(),
                     "min_loss": min_loss,
                     "train_losses": train_losses,
+                    "train_accuracies": train_accuracies,
                     "val_losses": val_losses,
+                    "val_accuracies": val_accuracies,
                     "early_stop_counter": early_stop_counter,
                 },
                 os.path.join(path_to_model, "latest_checkpoint.pth"),
@@ -135,13 +142,17 @@ def train(
 
         silentremove(os.path.join(path_to_model, "progress.png"))
 
-        fig = plt.figure(figsize=(12, 7), dpi=200, facecolor="w")
-        plt.plot(train_losses, label="train")
-        plt.plot(val_losses, label="val")
-        plt.legend()
-        plt.xlabel("Epoch")
-        plt.ylabel("Loss")
-        plt.title("Loss evolution")
+        fig, ax1 = plt.subplots(figsize=(12, 7), dpi=200, facecolor="w")
+        ax2 = ax1.twinx()
+        ax1.plot(train_losses, label="loss train", color="blue")
+        ax1.plot(val_losses, label="loss validation", color="red")
+        ax2.plot(train_accuracies, label="accuracy train", color="orange", linestyle="--")
+        ax2.plot(val_accuracies, label="accuracy validation", color="green", linestyle="--")
+        ax1.set_xlabel("Epoch")
+        ax1.set_ylabel("Loss")
+        ax2.set_ylabel("Accuracy")
+        ax1.legend()
+        ax2.legend(loc="upper center")
         fig.savefig(os.path.join(path_to_model, "progress.png"))
         plt.close(fig)
 
