@@ -162,6 +162,7 @@ if __name__ == "__main__":
 
     if args.resume_training:
         args = Namespace(**load_model_config(args.model_name))
+        args.resume_training = True
 
     if args.seed is not None:
         seed = args.seed

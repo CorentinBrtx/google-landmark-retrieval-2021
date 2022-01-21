@@ -55,6 +55,7 @@ def train(
     early_stop_counter = 0
 
     if resume_training:
+        logger.info(f"Loading checkpoint for model {model_name}")
         checkpoint = torch.load(os.path.join(path_to_model, "latest_checkpoint.pth"))
         backbone.load_state_dict(checkpoint["backbone_state_dict"])
         angular_margin.load_state_dict(checkpoint["head_state_dict"])
