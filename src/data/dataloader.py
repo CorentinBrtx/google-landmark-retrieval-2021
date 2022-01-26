@@ -3,6 +3,7 @@ from typing import Tuple
 
 import torch
 from src.data.dataset import GoogleLandmarkDataset
+from src.data.test_dataset import TestLandmarkDataset
 from torch.utils.data import DataLoader, random_split
 from torchvision import transforms
 
@@ -77,6 +78,51 @@ def load_dataset(
         drop_last=False,
     )
 
-    nb_classes = dataset.num_classes
+    return train_loader, validation_loader, dataset.num_classes
 
-    return train_loader, validation_loader, nb_classes
+
+def load_test_dataset(
+    data_dir: str, batch_size: int = 64, num_workers: int = 0, image_size: int = 224
+) -> DataLoader:
+    """
+    Create the test dataloader from the test set.
+
+    Parameters
+    ----------
+    data_dir : str
+        directory containing the data
+    batch_size : int
+        batch_size to use
+    num_workers : int, optional
+        num_workers for the data loaders, by default 0
+
+
+    Returns
+    -------
+    test_loader : DataLoader
+        the test loader
+    """
+    transformations = transforms.Compose(
+        [
+            transforms.Resize((image_size, image_size)),
+            transforms.Normalize(
+                mean=[0.485 * 255, 0.456 * 255, 0.406 * 255],
+                std=[0.229 * 255, 0.224 * 255, 0.225 * 255],
+            ),
+        ]
+    )
+
+    dataset = TestLandmarkDataset(
+        img_dir=os.path.join(data_dir, "test"),
+        transform=transformations,
+    )
+
+    test_loader = DataLoader(
+        dataset,
+        batch_size=batch_size,
+        shuffle=False,
+        num_workers=num_workers,
+        drop_last=False,
+    )
+
+    return test_loader
