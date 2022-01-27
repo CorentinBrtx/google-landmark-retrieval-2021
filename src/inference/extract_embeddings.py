@@ -4,6 +4,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
+from src.utils.logger import logger
 
 
 @torch.no_grad()
@@ -14,6 +15,8 @@ def extract_embeddings(
     test_embeddings = []
     test_ids = []
 
+    backbone.to(device)
+
     backbone.eval()
     for i_batch, (x, y) in enumerate(test_loader):
         x = x.to(device)
@@ -22,6 +25,6 @@ def extract_embeddings(
         test_ids += y
 
         if i_batch % log_interval == 0:
-            print(f"Extracting embedings Batch {i_batch}/{len(test_loader)}")
+            logger.info(f"Extracting embedings Batch {i_batch}/{len(test_loader)}")
 
     return torch.cat(test_embeddings).cpu().numpy(), np.array(test_ids)
