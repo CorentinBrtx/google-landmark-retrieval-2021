@@ -94,7 +94,7 @@ if __name__ == "__main__":
 
     logger.info("Dataset loaded")
 
-    efficientnet = EfficientNet.from_name(args.efficientnet, {"num_classes": args.feature_size})
+    efficientnet = EfficientNet.from_name(args.efficient_net, num_classes = args.feature_size)
 
     backbone = EfficientNetBackbone(feature_size=args.feature_size, efficientNet=efficientnet)
 
