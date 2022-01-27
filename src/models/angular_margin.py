@@ -92,3 +92,97 @@ class ArcFace(AngularMarginHead):
         There is no modulation for negative cosine similarity in ArcFace
         """
         return self.cosine
+
+
+class MVArcSoftmax(AngularMarginHead):
+    def __init__(
+        self,
+        feature_size: int,
+        nb_classes: int,
+        s: Optional[int] = 64,
+        m: Optional[float] = 0.5,
+        t: Optional[float] = 1.2,
+        clip: Optional[bool] = True,
+    ) -> None:
+        super().__init__(feature_size, nb_classes, s, m, clip)
+        self.t = t
+
+    def positive_cosine_similarity_modulator(self) -> torch.Tensor:
+        """
+        Positive cosine modulator for MVArcSoftmax is: T(cos(theta_{y_i})) = cos(theta_{y_i} + m),
+        if we expand this expression it becomes: cos(theta_{y_i})*cos(m) - sin(theta_{y_i})*sin(m)
+        """
+        return self.cosine * self.cos_m - self.sine * self.sin_m
+
+    def negative_cosine_similarity_modulator(
+        self, cosine_after_positive_modulator: torch.Tensor
+    ) -> torch.Tensor:
+        """
+        Negative cosine similarity modulator for MVArcSoftmax:
+
+        if T(cos(theta_y_i)) - cos(theta_j) >= 0:
+            return cos(theta_j)
+        else:
+            return t*cos(theta_j) + t - 1
+
+        """
+        return torch.where(
+            cosine_after_positive_modulator - self.cosine >= 0,
+            self.cosine,
+            self.t * self.cosine + self.t - 1,
+        )
+
+
+class CurricularFace(AngularMarginHead):
+    def __init__(
+        self,
+        feature_size: int,
+        nb_classes: int,
+        s: Optional[int] = 64,
+        m: Optional[float] = 0.5,
+        alpha: Optional[float] = 0.99,
+        clip: Optional[bool] = True,
+    ) -> None:
+        super().__init__(feature_size, nb_classes, s, m, clip)
+        self.t = 0
+        self.ts = []
+        self.alpha = alpha
+
+    def positive_cosine_similarity_modulator(self) -> torch.Tensor:
+        """
+        Positive cosine modulator for CurricularFace is: T(cos(theta)) = cos(theta + m),
+        if we expand this expression it becomes: cos(theta)*cos(m) - sin(theta)*sin(m)
+        """
+        return self.cosine * self.cos_m - self.sine * self.sin_m
+
+    def negative_cosine_similarity_modulator(
+        self, cosine_after_positive_modulator: torch.Tensor
+    ) -> torch.Tensor:
+        """
+        Negative cosine similarity modulator for CurricularFace:
+
+        if T(cos(theta_y_i)) - cos(theta_j) >= 0:
+            return cos(theta_j)
+        else:
+            return cos(theta_j) * (t + cos(theta_j))
+
+        """
+        return torch.where(
+            cosine_after_positive_modulator - self.cosine >= 0,
+            self.cosine,
+            self.cosine ** 2 + self.t * self.cosine,
+        )
+
+    @torch.no_grad()
+    def adjust_t(self, y: torch.Tensor) -> None:
+        """
+        We adjust t based on Exponential Moving Avarage
+        """
+        r = self.cosine[torch.arange(len(self.cosine)), y].mean()
+        self.t = self.alpha * r + (1 - self.alpha) * self.t
+
+    def forward(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
+        self.ts.append(self.t)
+        output = super().forward(x, y)
+        self.adjust_t(y)
+        return output
