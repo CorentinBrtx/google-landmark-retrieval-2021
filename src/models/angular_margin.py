@@ -181,8 +181,8 @@ class CurricularFace(AngularMarginHead):
         r = self.cosine[torch.arange(len(self.cosine)), y].mean()
         self.t = self.alpha * r + (1 - self.alpha) * self.t
 
-    def forward(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
+    def forward(self, features: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
         self.ts.append(self.t)
-        output = super().forward(x, y)
+        output = super().forward(features, y)
         self.adjust_t(y)
         return output

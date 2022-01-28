@@ -10,9 +10,9 @@ import torch.nn as nn
 from efficientnet_pytorch import EfficientNet
 from numpy import random
 from src.data.dataloader import load_dataset
-from src.models.angular_margin import ArcFace
+from src.models.angular_margin import ArcFace, CurricularFace, MVArcSoftmax
 from src.models.backbone import EfficientNetBackbone
-from src.models.saving import save_model_config, load_model_config
+from src.models.saving import load_model_config, save_model_config
 from src.train.train import train
 from src.utils.logger import logger
 
@@ -62,6 +62,13 @@ if __name__ == "__main__":
         type=float,
         help="Initial learning rate for the Adam optimizer.",
         default=1e-3,
+    )
+    parser.add_argument(
+        "--angular-margin",
+        dest="angular_margin",
+        type=str,
+        help="Angular margin to use. Can be one of 'arcface', 'mvarcsoftmax' or 'curricularface'.",
+        default="arcface",
     )
     parser.add_argument(
         "-m",
@@ -182,6 +189,25 @@ if __name__ == "__main__":
 
     efficient_net = EfficientNet.from_pretrained(args.efficient_net, num_classes=args.feature_size)
 
+    if args.angular_margin == "arcface":
+        angular_margin = ArcFace(
+            feature_size=args.feature_size, nb_classes=nb_classes, m=args.m, s=args.s
+        )
+    elif args.angular_margin == "mvarcsoftmax":
+        angular_margin = MVArcSoftmax(
+            feature_size=args.feature_size, nb_classes=nb_classes, m=args.m, s=args.s, t=args.t
+        )
+    elif args.angular_margin == "curricularface":
+        angular_margin = CurricularFace(
+            feature_size=args.feature_size,
+            nb_classes=nb_classes,
+            m=args.m,
+            s=args.s,
+            alpha=args.alpha,
+        )
+    else:
+        raise ValueError("Unknown angular margin")
+
     save_model_config(
         {
             **vars(args),
@@ -201,7 +227,7 @@ if __name__ == "__main__":
             args.feature_size,
             efficient_net,
         ),
-        ArcFace(args.feature_size, nb_classes, args.s, args.m),
+        angular_margin,
         nn.CrossEntropyLoss(),
         args.lr,
         args.epochs,
