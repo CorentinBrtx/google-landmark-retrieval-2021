@@ -14,7 +14,7 @@ from src.models.angular_margin import ArcFace, CurricularFace, MVArcSoftmax
 from src.models.backbone import EfficientNetBackbone
 from src.models.saving import load_model_config, save_model_config
 from src.train.train import train
-from src.utils.logger import logger
+from src.utils.logger import setup_logger
 
 if __name__ == "__main__":
     parser = ArgumentParser(
@@ -163,6 +163,12 @@ if __name__ == "__main__":
 
     os.environ["LANDMARK_RETRIEVAL_DATA_DIR"] = args.data_dir
 
+    model_dir = os.path.join(args.data_dir, "models", args.model_name)
+
+    os.makedirs(model_dir, exist_ok=True)
+
+    logger = setup_logger(os.path.join(model_dir, "train.log"))
+
     DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
     logger.info(f"Using device: {DEVICE}")
@@ -236,5 +242,6 @@ if __name__ == "__main__":
         args.early_stop_after,
         DEVICE,
         args.data_dir,
+        logger,
         args.resume_training,
     )

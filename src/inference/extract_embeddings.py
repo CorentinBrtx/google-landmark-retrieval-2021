@@ -4,12 +4,11 @@ import numpy as np
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
-from src.utils.logger import logger
 
 
 @torch.no_grad()
 def extract_embeddings(
-    test_loader: DataLoader, backbone: nn.Module, device: str
+    test_loader: DataLoader, backbone: nn.Module, device: str, logger=None
 ) -> Tuple[np.ndarray, np.ndarray]:
     log_interval = len(test_loader) // 10
     test_embeddings = []
@@ -24,7 +23,7 @@ def extract_embeddings(
         test_embeddings.append(backbone(x))
         test_ids += y
 
-        if i_batch % log_interval == 0:
-            logger.info(f"Extracting embedings Batch {i_batch}/{len(test_loader)}")
+        if logger is not None and i_batch % log_interval == 0:
+            logger.info(f"Extracting embeddings Batch {i_batch}/{len(test_loader)}")
 
     return torch.cat(test_embeddings).cpu().numpy(), np.array(test_ids)

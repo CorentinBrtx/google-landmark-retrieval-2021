@@ -8,7 +8,7 @@ import torch.nn as nn
 import torch.optim as optim
 from src.train.epoch import pass_epoch
 from src.utils.file_manipulation import silentremove
-from src.utils.logger import SummaryWriter, logger
+from src.utils.logger import SummaryWriter
 from torch.utils.data import DataLoader
 
 
@@ -26,6 +26,7 @@ def train(
     early_stop_after: int,
     device: str,
     data_dir: str,
+    logger,
     resume_training: bool = False,
 ) -> nn.Module:
 
@@ -38,7 +39,7 @@ def train(
     optimizer = optim.Adam(list(backbone.parameters()) + list(angular_margin.parameters()), lr=lr)
     scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=5)
 
-    summary_writer = SummaryWriter(nb_epochs, len(train_loader), len(validation_loader))
+    summary_writer = SummaryWriter(nb_epochs, len(train_loader), len(validation_loader), logger)
 
     path_to_model = os.path.join(data_dir, "models", model_name)
 
@@ -88,7 +89,7 @@ def train(
             log_interval,
             device,
         )
-        logger.info(f"Train Epoch Loss: {loss:.2f} | Accuracy: {acc:.2f}\n")
+        logger.info(f"Train Epoch Loss: {loss:.4f} | Accuracy: {acc:.4f}\n")
         train_accuracies.append(acc)
         train_losses.append(loss)
 
@@ -104,7 +105,7 @@ def train(
             log_interval,
             device,
         )
-        logger.info(f"Validation Epoch Loss: {loss:.2f} | Accuracy: {acc:.2f}\n")
+        logger.info(f"Validation Epoch Loss: {loss:.4f} | Accuracy: {acc:.4f}\n")
         val_accuracies.append(acc)
         val_losses.append(loss)
 
