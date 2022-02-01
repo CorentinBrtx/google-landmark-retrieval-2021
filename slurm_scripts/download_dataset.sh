@@ -5,8 +5,6 @@
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=6
 #SBATCH --partition=cpu_long
-#SBATCH --mail-user=corentin.berteaux@student-cs.fr
-#SBATCH --mail-type=ALL
 
 # Load necessary modules
 module purge

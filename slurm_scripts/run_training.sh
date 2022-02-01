@@ -7,8 +7,6 @@
 #SBATCH --mem=64G
 #SBATCH --partition=gpu
 #SBATCH --cpus-per-task=4
-#SBATCH --mail-user=corentin.berteaux@student-cs.fr
-#SBATCH --mail-type=ALL
 
 # Load necessary modules
 module purge

@@ -10,6 +10,23 @@ from torch.utils.data import DataLoader
 def extract_embeddings(
     test_loader: DataLoader, backbone: nn.Module, device: str, logger=None
 ) -> Tuple[np.ndarray, np.ndarray]:
+    """
+    Extract embeddings from the given test set.
+
+    Parameters
+    ----------
+    test_loader : DataLoader
+        DataLoader containing the test set.
+    backbone : nn.Module
+        Backbone model to use for embedding.
+    device : str
+        Device to use for pytorch operations.
+
+    Returns
+    -------
+    test_embbedings, test_ids: Tuple[np.ndarray, np.ndarray]
+        Embeddings and corresponding image ids of the test set.
+    """
     log_interval = len(test_loader) // 10
     test_embeddings = []
     test_ids = []

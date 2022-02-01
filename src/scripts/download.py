@@ -16,6 +16,18 @@ from src.data.utils import get_path, int_to_string
 
 
 def transfer_images(data_dir: str, clean_csv: str, nb_landmarks: int = -1):
+    """
+    Transfer the images from the temporary folder to the train folder by keeping only the landmarks in the clean_csv file.
+
+    Parameters
+    ----------
+    data_dir : str
+        Directory where the data is stored.
+    clean_csv : str
+        Clean csv file containing the landmarks.
+    nb_landmarks : int, optional
+        Number of landmarks to keep, -1 to keep all, by default -1
+    """
     clean_data = pd.read_csv(clean_csv)
     images_clean = {}
     for _, row in clean_data.iterrows():
@@ -56,6 +68,22 @@ def download_and_sort(
     end: int = 0,
     nb_landmarks: int = -1,
 ):
+    """
+    Download the images from the Google Landmark dataset train set, and keep only the ones corresponding to the landmarks in the clean_csv file.
+
+    Parameters
+    ----------
+    data_dir : str
+        Directory where the data will be downloaded.
+    clean_csv : Optional[str], optional
+        Path to the clean_csv file, if None, the file will be downloaded, by default None
+    begin : int, optional
+        first file to be downloaded, between 0 and 500, by default 0
+    end : int, optional
+        last file to be downloaded, between begin and 500, by default 0
+    nb_landmarks : int, optional
+        number of landmarks to keep from the clean_csv file, -1 to keep all landmarks, by default -1
+    """
 
     data_dir = os.path.abspath(data_dir)
 
