@@ -47,3 +47,5 @@ For more information, use:
 ## Kaggle submission
 
 To actually submit your model to the Kaggle competition, you can use the following command, you can use the provided notebook `kaggle_main.ipynb`, by modifying it to specify the relevant parameters.
+
+A trained model is provided in the `models/` directory, so you can try to submit it without training your own.
